@@ -1,2 +1,2 @@
-# HabitsDesign
-Habits by Design activity tracker visualization
+# Habits by Design
+Habits by Design is a human-centered design and analytics project aimed to help veterans build a better life through cumulative changes in their daily small habits. This project was presented to Booz Allen Hamilton and a panel of healthcare experts in February 2016. The activity display that is part of the dashboard is accessible in this repository. See our presentation [here](http://www.slideshare.net/ChishengLi/habits-by-design).
