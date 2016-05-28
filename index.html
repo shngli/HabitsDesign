@@ -1,0 +1,199 @@
+<!DOCTYPE HTML>
+<html> 
+<Title>Habits By Design</Title>
+<head>
+    <script type="text/javascript" src="js/protovis.js"></script>
+    <style type="text/css">
+    body {
+        background: #272728;
+    }
+    #fig {
+        height: 800px;
+        width: 1200px;
+    }
+    </style>
+</head>
+<body>
+    <div ID="vis">
+        <script type="text/javascript+protovis">
+        var toDraw = [];
+
+        var data = [
+            {week:1,weekday:"Saturday",timeofday:"08:00am",duration:1,task:"Jogging",quality:2},
+            {week:1,weekday:"Saturday",timeofday:"09:00am",duration:0.5,task:"Cafe",quality:2},
+            {week:1,weekday:"Saturday",timeofday:"09:30am",duration:1.5,task:"Meditation",quality:3},
+            {week:1,weekday:"Saturday",timeofday:"11:00am",duration:0.5,task:"Reading",quality:1},
+            {week:1,weekday:"Saturday",timeofday:"11:30am",duration:0.5,task:"Brunch",quality:3},
+            {week:1,weekday:"Saturday",timeofday:"01:00pm",duration:3,task:"Football Game",quality:3},
+            {week:1,weekday:"Saturday",timeofday:"04:00pm",duration:1,task:"Afternoon Nap",quality:2},
+            {week:1,weekday:"Saturday",timeofday:"05:00pm",duration:1,task:"Gym",quality:1},
+            {week:1,weekday:"Saturday",timeofday:"06:00pm",duration:0.5,task:"Video Game",quality:2},
+            {week:1,weekday:"Saturday",timeofday:"06:30pm",duration:1.5,task:"Dinner",quality:3},
+            {week:1,weekday:"Saturday",timeofday:"08:00pm",duration:2,task:"Movies",quality:2},
+            {week:1,weekday:"Saturday",timeofday:"10:00pm",duration:2,task:"Salsa Dancing",quality:3}
+        ];
+
+        var over = "";
+
+        var angle = 2.0*Math.PI / (data.length + 1);
+
+        var innerRad = 60;
+
+        var ring = 12.00;
+
+        var hourChange = 0;
+
+        var qualityColor = {
+            1: "#CB7469",
+            2: "#EFB844",
+            3: "#82D485"
+        };
+
+        //Create the panel for activity tracker
+        var tracker = new pv.Panel()
+            .width(800)
+            .height(800)
+
+        //Activity pie chart
+        tracker.add(pv.Wedge)
+            .data(data)
+            .left(450)
+            .bottom(450)
+            .innerRadius(innerRad)
+            .startAngle(function(d) this.index * angle + angle/2-Math.PI*2)
+            .outerRadius(function(d) (d.duration-hourChange)*60+innerRad)
+            .angle(function(d) 2* Math.PI/(data.length+1))
+            .strokeStyle(function(d) over==d.timeofday ? "white" : "#272728")
+            .lineWidth(5)
+            .fillStyle(function(d) qualityColor[d.quality])
+            .event("mouseover", function(d) rend(d.timeofday))
+            .event("mouseout", function(d) rend(""))
+
+        //Circular black lines to divide the pie chart into units 
+        tracker.add(pv.Wedge)
+            .data([0,0.5,1,1.5,2,2.5,3,3.5,4])
+            .left(450)
+            .bottom(450)
+            .innerRadius(function() this.index*30+innerRad)
+            .outerRadius(function() this.index*30+innerRad+1)
+            .angle(2* Math.PI)
+            .fillStyle("#272728")
+
+        //Add acitivity and duration labels on the pie chart
+        tracker.add(pv.Wedge)
+            .data(data)
+            .left(450)
+            .bottom(450)
+            .innerRadius(innerRad)
+            .outerRadius(function(d) (d.duration-hourChange)*60+innerRad+5)
+            .startAngle(function(d) this.index * angle + angle/2-Math.PI*2)
+            .angle(function(d) 2* Math.PI/(data.length+1))
+            .fillStyle(null)
+            .strokeStyle(null)
+            .event("mouseover", function(d) rend(d.timeofday))
+            .event("mouseout", function(d) rend(""))
+            .anchor("outer").add(pv.Label)
+            .text(function(d) d.task)
+            .textAlign("center")
+            .textBaseline("bottom")
+            .textAngle(function() this.anchorTarget().midAngle() + Math.PI/2)
+            .textStyle(function(d) over==d.timeofday ? "white" : null)
+            .font("14px sans-serif")
+
+        //Add axis in hours on pie chart
+        tracker.add(pv.Dot)
+            .data([0,0.5,1,1.5,2,2.5,3,3.5,4])
+            .left(function() this.index*30+450+innerRad)
+            .bottom(451)
+            .strokeStyle("none")
+            .anchor("center").add(pv.Label)
+            .textAlign("center")
+            .textStyle("white")
+            .text(function(d) d)
+            .font("15px sans-serif")
+
+        tracker.add(pv.Label)
+            .left(404)
+            .bottom(443)
+            .text("Hours Spent:")
+            .textStyle("white")
+            .font("15px sans-serif")
+
+        //Label Listing Section
+        tracker.add(pv.Dot)
+            .data(data)
+            .left(50)
+            .size(50)
+            .top(function(d) this.index*20+250)
+            .fillStyle(function(d) over==d.timeofday? qualityColor[d.quality]: "white")
+            .strokeStyle("")
+            .event("mouseover", function(d) rend(d.timeofday))
+            .event("mouseout", function(d) rend(""))
+            .anchor("right").add(pv.Label)
+            .text(function(d) d.timeofday)
+            .textStyle(function(d) over==d.timeofday ? "white" : "#9A9D9F")
+            .font("15px sans-serif")
+
+        //Activity Rating Legend
+        var legendLeft = 50;
+        var legendBottom = 625;
+
+        tracker.add(pv.Dot)
+            .left(legendLeft)
+            .bottom(legendBottom)
+            .size(80)
+            .fillStyle("#82D485")
+            .strokeStyle("")
+            .anchor("right").add(pv.Label)
+            .textStyle("white")
+            .text("Postive Feeling")
+            .font("15px sans-serif")
+
+        tracker.add(pv.Dot)
+            .left(legendLeft)
+            .bottom(legendBottom+25)
+            .size(80)
+            .fillStyle("#EFB844")
+            .strokeStyle("")
+            .anchor("right").add(pv.Label)
+            .textStyle("white")
+            .text("Neutral Feeling")
+            .font("15px sans-serif")
+
+        tracker.add(pv.Dot)
+            .left(legendLeft)
+            .bottom(legendBottom+50)
+            .size(80)
+            .fillStyle("#CB7469")
+            .strokeStyle("")
+            .anchor("right").add(pv.Label)
+            .textStyle("white")
+            .text("Negative Feeling")
+            .font("15px sans-serif")
+
+        //Header 1
+        tracker.add(pv.Label)
+            .left(40)
+            .top(40)
+            .text("My Daily Activity Tracker")
+            .font("25px sans-serif")
+            .textStyle("white")
+
+        //Header 2
+        tracker.add(pv.Label)
+            .top(80)
+            .textStyle("white")
+            .left(40)
+            .text("Activity Duration and Quality: Saturday 02/21/2016")
+            .font("20px sans-serif")
+
+        function rend(dt) {
+            over = dt;
+            tracker.render();
+        }
+
+        tracker.render();
+        </script>
+    </div>
+</body> 
+</html>
